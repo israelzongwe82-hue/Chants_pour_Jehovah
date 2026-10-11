@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "Chants pour Jéhovah",
+  "short_name": "Chants Jéhovah",
+  "description": "Des mélodies de foi, des paroles d'espérance.",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#071426",
+  "theme_color": "#10182c",
+  "categories": [
+    "music",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "images/icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
