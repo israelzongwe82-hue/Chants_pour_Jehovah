@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#10182c">
+    <meta name="description" content="Chants pour Jéhovah : écoutez vos chants préférés hors connexion.">
+    <title>Chants pour Jéhovah</title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="images/icon.png">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <header class="app-header">
+        <button id="backButton" class="icon-button" aria-label="Retour" hidden>
+            ←
+        </button>
+
+        <div class="brand">
+            <div class="brand-icon">♫</div>
+            <div>
+                <h1>Chants pour Jéhovah</h1>
+                <p>Des mélodies de foi, des paroles d'espérance</p>
+            </div>
+        </div>
+
+        <button id="settingsButton" class="icon-button" aria-label="Paramètres">
+            ⚙️
+        </button>
+    </header>
+
+    <main id="appMain">
+
+        <!-- ACCUEIL -->
+        <section id="homePage" class="page active">
+            <div class="welcome-card">
+                <span class="gold-label">BIENVENUE</span>
+
+                <h2>Des chants pour nourrir votre foi</h2>
+
+                <p>
+                    Retrouvez vos chants dédiés à Jéhovah,
+                    écoutez-les et gardez vos favoris à portée de main.
+                </p>
+
+                <button id="startButton" class="primary-button">
+                    🎵 Découvrir les chansons
+                </button>
+            </div>
+
+            <div class="section-heading">
+                <h2>Votre bibliothèque musicale</h2>
+            </div>
+
+            <div class="quick-actions">
+                <button class="action-card" data-page="libraryPage">
+                    <span>🎶</span>
+                    <strong>Toutes les chansons</strong>
+                </button>
+
+                <button class="action-card" data-page="favoritesPage">
+                    <span>❤️</span>
+                    <strong>Mes favoris</strong>
+                </button>
+
+                <button class="action-card" data-page="searchPage">
+                    <span>🔎</span>
+                    <strong>Rechercher</strong>
+                </button>
+
+                <button class="action-card" data-page="identityPage">
+                    <span>👤</span>
+                    <strong>Créateur</strong>
+                </button>
+            </div>
+
+            <div class="offline-notice">
+                <span>📵</span>
+                <div>
+                    <strong>Écoutez hors connexion</strong>
+                    <p>Les chansons seront intégrées à l'application.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- BIBLIOTHÈQUE -->
+        <section id="libraryPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <span class="gold-label">BIBLIOTHÈQUE</span>
+                    <h2>Toutes les chansons</h2>
+                </div>
+                <span id="songCount" class="count-badge">20 chansons</span>
+            </div>
+
+            <div id="libraryList" class="song-list"></div>
+        </section>
+
+        <!-- FAVORIS -->
+        <section id="favoritesPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <span class="gold-label">VOTRE SÉLECTION</span>
+                    <h2>Mes favoris ❤️</h2>
+                </div>
+            </div>
+
+            <div id="favoritesList" class="song-list"></div>
+        </section>
+
+        <!-- RECHERCHE -->
+        <section id="searchPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <span class="gold-label">RECHERCHE</span>
+                    <h2>Retrouver un chant</h2>
+                </div>
+            </div>
+
+            <label class="search-box">
+                <span>🔎</span>
+                <input
+                    id="searchInput"
+                    type="search"
+                    placeholder="Écrivez un titre..."
+                    autocomplete="off"
+                    aria-label="Rechercher une chanson"
+                >
+            </label>
+
+            <div id="searchResults" class="song-list"></div>
+        </section>
+
+        <!-- PARAMÈTRES -->
+        <section id="settingsPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <span class="gold-label">PERSONNALISATION</span>
+                    <h2>Paramètres ⚙️</h2>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <div class="setting-row">
+                    <div>
+                        <strong>Mode sombre</strong>
+                        <p>Choisissez une apparence sombre ou claire.</p>
+                    </div>
+
+                    <label class="switch">
+                        <input id="darkModeToggle" type="checkbox" checked>
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <strong>Thème bleu nuit et doré</strong>
+                        <p>Utiliser les couleurs principales de l'application.</p>
+                    </div>
+
+                    <label class="switch">
+                        <input id="goldThemeToggle" type="checkbox" checked>
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-block">
+                    <label for="volumeControl">
+                        <strong>🔊 Volume des chansons</strong>
+                    </label>
+
+                    <div class="range-line">
+                        <span>🔈</span>
+                        <input
+                            id="volumeControl"
+                            type="range"
+                            min="0"
+                            max="100"
+                            value="80"
+                            step="1"
+                        >
+                        <span>🔊</span>
+                    </div>
+
+                    <p class="setting-value">
+                        Volume : <span id="volumeValue">80 %</span>
+                    </p>
+                </div>
+
+                <div class="setting-block">
+                    <label for="textSizeControl">
+                        <strong>🔠 Taille des textes</strong>
+                    </label>
+
+                    <select id="textSizeControl">
+                        <option value="0.85">Petite — 85 %</option>
+                        <option value="1" selected>Normale — 100 %</option>
+                        <option value="1.15">Grande — 115 %</option>
+                        <option value="1.3">Très grande — 130 %</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- IDENTITÉ DU CRÉATEUR -->
+        <section id="identityPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <span class="gold-label">À PROPOS</span>
+                    <h2>Identité du créateur</h2>
+                </div>
+            </div>
+
+            <div class="identity
