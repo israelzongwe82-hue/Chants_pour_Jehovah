@@ -1,92 +1,150 @@
 name: Construire Chants pour Jehovah APK
 
 on:
-workflow_dispatch:
-push:
-branches:
-- main
-paths:
-- 'index.html'
-- 'style.css'
-- 'app.js'
-- 'manifest.json'
-- 'package.json'
-- 'capacitor.config.json'
-- 'audio/'
-- 'images/'
-- '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'index.html'
+      - 'style.css'
+      - 'app.js'
+      - 'manifest.json'
+      - 'package.json'
+      - 'capacitor.config.json'
+      - 'audio/**'
+      - 'images/**'
+      - '.github/workflows/build-apk.yml'
 
 permissions:
-contents: read
+  contents: read
 
 jobs:
-build-android:
-name: Construire l'APK Android
-runs-on: ubuntu-latest
+  build-android:
+    name: Construire l'APK Android
+    runs-on: ubuntu-latest
 
-steps:
-  - name: Télécharger le dépôt
-    uses: actions/checkout@v4
+    steps:
+      - name: Télécharger le dépôt
+        uses: actions/checkout@v4
 
-  - name: Installer Node.js
-    uses: actions/setup-node@v4
-    with:
-      node-version: 22
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-  - name: Installer Java
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: '21'
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
 
-  - name: Installer Android SDK
-    uses: android-actions/setup-android@v4
-    with:
-      packages: 'platform-tools'
+      - name: Installer Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
 
-  - name: Vérifier les versions
-    run: |
-      node --version
-      npm --version
-      java -version
-      sdkmanager --version
+      - name: Vérifier les versions
+        run: |
+          node --version
+          npm --version
+          java -version
+          sdkmanager --version
 
-  - name: Installer les dépendances
-    run: npm install
+      - name: Installer les dépendances
+        run: npm install
 
-  - name: Préparer les fichiers web
-    run: |
-      mkdir -p www
-      cp index.html style.css app.js manifest.json www/
-      cp -R audio images www/
+      - name: Préparer les fichiers web
+        run: |
+          mkdir -p www
+          cp index.html style.css app.js manifest.json www/
+          cp -R audio images www/
 
-  - name: Ajouter Android
-    run: npx cap add android
+      - name: Vérifier les images
+        run: |
+          test -f images/icon.png
+          test -f images/splash.png
+          echo "Les deux images sont présentes."
 
-  - name: Préparer les images de l'application
-    run: |
-      mkdir -p assets
-      cp images/icon.png assets/icon.png
-      cp images/splash.png assets/splash.png
+      - name: Ajouter Android
+        run: npx cap add android
 
-  - name: Générer les icônes et le splash screen
-    run: |
-      npm install --no-save @capacitor/assets
-      npx capacitor-assets generate --android
+      - name: Préparer les images natives
+        run: |
+          python3 -m pip install --user Pillow
 
-  - name: Synchroniser Capacitor
-    run: npx cap sync android
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageOps
 
-  - name: Construire l'APK
-    run: |
-      cd android
-      chmod +x gradlew
-      ./gradlew --no-daemon assembleDebug
+          Path("assets").mkdir(exist_ok=True)
 
-  - name: Publier l'APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: Chants-pour-Jehovah-APK
-      path: android/app/build/outputs/apk/debug/app-debug.apk
-      if-no-files-found: error
-      retention-days: 14
+          def prepare_image(source, size, background):
+              image = Image.open(source).convert("RGBA")
+              image = ImageOps.contain(
+                  image,
+                  (size, size),
+                  method=Image.Resampling.LANCZOS
+              )
+
+              canvas = Image.new(
+                  "RGBA",
+                  (size, size),
+                  background
+              )
+
+              x = (size - image.width) // 2
+              y = (size - image.height) // 2
+
+              canvas.alpha_composite(image, (x, y))
+              return canvas
+
+          icon = prepare_image(
+              "images/icon.png",
+              1024,
+              (0, 0, 0, 0)
+          )
+
+          icon.save("assets/icon-only.png")
+          icon.save("assets/icon-foreground.png")
+
+          background = Image.new(
+              "RGB",
+              (1024, 1024),
+              (7, 20, 38)
+          )
+
+          background.save("assets/icon-background.png")
+
+          splash = prepare_image(
+              "images/splash.png",
+              2732,
+              (7, 20, 38, 255)
+          )
+
+          splash.convert("RGB").save("assets/splash.png")
+
+          print("Images préparées avec succès.")
+          PY
+
+      - name: Générer les icônes et le splash screen
+        run: |
+          npm install --no-save @capacitor/assets
+          npx capacitor-assets generate --android
+
+      - name: Synchroniser Capacitor
+        run: npx cap sync android
+
+      - name: Construire l'APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Publier l'APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Chants-pour-Jehovah-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
