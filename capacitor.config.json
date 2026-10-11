@@ -1,0 +1,12 @@
+{
+  "appId": "com.israelzongwe.chantspourjehovah",
+  "appName": "Chants pour Jéhovah",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "backgroundColor": "#071426",
+  "plugins": {
+    "App": {
+      "launchUrl": "index.html"
+    }
+  }
+}
