@@ -1,81 +1,92 @@
 name: Construire Chants pour Jehovah APK
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'index.html'
-      - 'style.css'
-      - 'app.js'
-      - 'manifest.json'
-      - 'package.json'
-      - 'capacitor.config.json'
-      - 'audio/**'
-      - 'images/**'
-      - '.github/workflows/build-apk.yml'
+workflow_dispatch:
+push:
+branches:
+- main
+paths:
+- 'index.html'
+- 'style.css'
+- 'app.js'
+- 'manifest.json'
+- 'package.json'
+- 'capacitor.config.json'
+- 'audio/'
+- 'images/'
+- '.github/workflows/build-apk.yml'
 
 permissions:
-  contents: read
+contents: read
 
 jobs:
-  build-android:
-    name: Construire l'APK Android
-    runs-on: ubuntu-latest
+build-android:
+name: Construire l'APK Android
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Télécharger le dépôt
-        uses: actions/checkout@v4
+steps:
+  - name: Télécharger le dépôt
+    uses: actions/checkout@v4
 
-      - name: Installer Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+  - name: Installer Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: 22
 
-      - name: Installer Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
+  - name: Installer Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '21'
 
-      - name: Installer Android SDK
-        uses: android-actions/setup-android@v4
-        with:
-          packages: 'platform-tools'
+  - name: Installer Android SDK
+    uses: android-actions/setup-android@v4
+    with:
+      packages: 'platform-tools'
 
-      - name: Vérifier les versions
-        run: |
-          node --version
-          npm --version
-          java -version
-          sdkmanager --version
+  - name: Vérifier les versions
+    run: |
+      node --version
+      npm --version
+      java -version
+      sdkmanager --version
 
-      - name: Installer les dépendances
-        run: npm install
+  - name: Installer les dépendances
+    run: npm install
 
-      - name: Préparer les fichiers web
-        run: |
-          mkdir -p www
-          cp index.html style.css app.js manifest.json www/
-          cp -R audio images www/
+  - name: Préparer les fichiers web
+    run: |
+      mkdir -p www
+      cp index.html style.css app.js manifest.json www/
+      cp -R audio images www/
 
-      - name: Ajouter Android
-        run: npx cap add android
+  - name: Ajouter Android
+    run: npx cap add android
 
-      - name: Synchroniser Capacitor
-        run: npx cap sync android
+  - name: Préparer les images de l'application
+    run: |
+      mkdir -p assets
+      cp images/icon.png assets/icon.png
+      cp images/splash.png assets/splash.png
 
-      - name: Construire l'APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug
+  - name: Générer les icônes et le splash screen
+    run: |
+      npm install --no-save @capacitor/assets
+      npx capacitor-assets generate --android
 
-      - name: Publier l'APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Chants-pour-Jehovah-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 14
+  - name: Synchroniser Capacitor
+    run: npx cap sync android
+
+  - name: Construire l'APK
+    run: |
+      cd android
+      chmod +x gradlew
+      ./gradlew --no-daemon assembleDebug
+
+  - name: Publier l'APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: Chants-pour-Jehovah-APK
+      path: android/app/build/outputs/apk/debug/app-debug.apk
+      if-no-files-found: error
+      retention-days: 14
