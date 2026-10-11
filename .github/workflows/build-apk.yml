@@ -1,0 +1,74 @@
+name: Construire Chants pour Jehovah APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'index.html'
+      - 'style.css'
+      - 'app.js'
+      - 'manifest.json'
+      - 'package.json'
+      - 'capacitor.config.json'
+      - 'audio/**'
+      - 'images/**'
+      - '.github/workflows/build-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    name: Construire l'APK Android
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Télécharger le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package.json
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Installer Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Installer les dépendances
+        run: npm install
+
+      - name: Préparer les fichiers de l'application
+        run: |
+          mkdir -p www
+          cp index.html style.css app.js manifest.json www/
+          cp -R audio images www/
+
+      - name: Ajouter le projet Android
+        run: npx cap add android
+
+      - name: Synchroniser Capacitor
+        run: npx cap sync android
+
+      - name: Construire l'APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Publier l'APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Chants-pour-Jehovah-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
