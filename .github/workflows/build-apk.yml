@@ -32,8 +32,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: package.json
 
       - name: Installer Java
         uses: actions/setup-java@v4
@@ -42,18 +40,27 @@ jobs:
           java-version: '21'
 
       - name: Installer Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+
+      - name: Vérifier les versions
+        run: |
+          node --version
+          npm --version
+          java -version
+          sdkmanager --version
 
       - name: Installer les dépendances
         run: npm install
 
-      - name: Préparer les fichiers de l'application
+      - name: Préparer les fichiers web
         run: |
           mkdir -p www
           cp index.html style.css app.js manifest.json www/
           cp -R audio images www/
 
-      - name: Ajouter le projet Android
+      - name: Ajouter Android
         run: npx cap add android
 
       - name: Synchroniser Capacitor
@@ -63,7 +70,7 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew --no-daemon assembleDebug
 
       - name: Publier l'APK
         uses: actions/upload-artifact@v4
